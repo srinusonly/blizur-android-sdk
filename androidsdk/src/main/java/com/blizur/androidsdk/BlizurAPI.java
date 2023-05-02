@@ -18,9 +18,12 @@ public class BlizurAPI {
     public static void init(Context context, String apiKey, String secret) {
         if (context instanceof Activity) {
             try {
+                Log.d("BlizurAPI", "init called");
                 AuthenticationManager.getInstance().handleAuthentication(apiKey, secret, context);
+                Log.d("BlizurAPI", "Authentication is done");
                 final Activity activity = (Activity) context;
                 SocketManager.setup(context, activity);
+                Log.d("BlizurAPI", "socket setup is done");
             } catch (Exception e) {
                 Log.e("Error while setting up blizur", e.getMessage());
             }

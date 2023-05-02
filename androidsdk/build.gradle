@@ -42,18 +42,6 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 }
 
-//afterEvaluate{
-//    android.libraryVariants.each{ variant->
-//        publishing.publications.create(variant.name, MavenPublication) {
-//            from components.findByName(variant.name)
-//            groupId = 'com.github.srinusonly'
-//            artifactId = 'blizur-android-sdk'
-//            version = '1.0'
-//
-//        }
-//    }
-//}
-
 afterEvaluate {
     println("Components: " + components*.name)
     publishing {
@@ -62,7 +50,7 @@ afterEvaluate {
                 afterEvaluate {
                     groupId = 'com.github.srinusonly'
                     artifactId = 'blizur-android-sdk'
-                    version = '1.0.4'
+                    version = '1.0.5'
 
                     from components.release
                 }
