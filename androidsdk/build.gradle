@@ -42,30 +42,31 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 }
 
-afterEvaluate{
-    android.libraryVariants.each{ variant->
-        publishing.publications.create(variant.name, MavenPublication) {
-            from components.findByName(variant.name)
-            groupId = 'com.github.srinusonly'
-            artifactId = 'blizur-android-sdk'
-            version = '1.0'
-
-        }
-    }
-}
-
-//afterEvaluate {
-//    publishing {
-//        publications {
-//            release(MavenPublication) {
-//                afterEvaluate {
-//                    groupId = 'com.github.srinusonly'
-//                    artifactId = 'blizur-android-sdk'
-//                    version = '1.0'
+//afterEvaluate{
+//    android.libraryVariants.each{ variant->
+//        publishing.publications.create(variant.name, MavenPublication) {
+//            from components.findByName(variant.name)
+//            groupId = 'com.github.srinusonly'
+//            artifactId = 'blizur-android-sdk'
+//            version = '1.0'
 //
-////                    from components.release
-//                }
-//            }
 //        }
 //    }
 //}
+
+afterEvaluate {
+    println("Components: " + components*.name)
+    publishing {
+        publications {
+            release(MavenPublication) {
+                afterEvaluate {
+                    groupId = 'com.github.srinusonly'
+                    artifactId = 'blizur-android-sdk'
+                    version = '1.0.4'
+
+                    from components.release
+                }
+            }
+        }
+    }
+}
