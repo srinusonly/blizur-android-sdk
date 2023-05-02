@@ -1,0 +1,9 @@
+<resources>
+    <color name="black">#000000</color>
+    <color name="white">#FFFFFF</color>
+    <color name="blue">#0000FF</color>
+    <color name="dark_blue">#000080</color>
+    <color name="popup_title_color">#000000</color>
+    <color name="popup_description_color">#666666</color>
+    <color name="popup_button_text_color">#FFFFFF</color>
+</resources>
