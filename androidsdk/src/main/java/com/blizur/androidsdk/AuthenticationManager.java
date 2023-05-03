@@ -1,5 +1,6 @@
 package com.blizur.androidsdk;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
@@ -22,7 +23,6 @@ import okhttp3.Response;
 
 public class AuthenticationManager {
     private static AuthenticationManager instance;
-    private RefreshAccessTokenTask refreshAccessTokenTask;
     private static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
     private static final String AUTH_ENDPOINT = "/v1/auth/verify-creds";
     private static final String REFRESH_AUTH_ENDPOINT = "/v1/auth/refresh-tokens";
@@ -34,6 +34,12 @@ public class AuthenticationManager {
             instance = new AuthenticationManager();
         }
         return instance;
+    }
+
+    private String getMessageFromResponse(Response response) throws JSONException, IOException {
+        String responseBody = response.body().string();
+        JSONObject responseJson = new JSONObject(responseBody);
+        return responseJson.getString("message");
     }
     private Map<String, String> getValues(String response) throws JSONException {
         JSONObject jsonObj = new JSONObject(response);
@@ -95,9 +101,11 @@ public class AuthenticationManager {
 
     private class AccessTokenRequestTask extends AsyncTask<String, Void, Boolean> {
         private Context mContext;
+        private Activity mActivity;
 
-        public AccessTokenRequestTask(Context context) {
+        public AccessTokenRequestTask(Context context, Activity activity) {
             mContext = context;
+            mActivity = activity;
         }
 
         @Override
@@ -125,10 +133,13 @@ public class AuthenticationManager {
                 if (response.isSuccessful()) {
                     saveTokens(response.body().string(), mContext);
                     return true;
+                } else {
+                    String message = getMessageFromResponse(response);
+                    Log.e("BlizurAPI", message);
                 }
             } catch (IOException | JSONException e) {
 //                e.printStackTrace();
-                Log.e("AccessTokenRequestTask", e.getMessage());
+                Log.e("BlizurAPI", e.getMessage());
             }
             return false;
         }
@@ -136,76 +147,22 @@ public class AuthenticationManager {
         @Override
         protected void onPostExecute(Boolean result) {
             // Handle the result of the access token request
-        }
-    }
-
-    private class RefreshAccessTokenTask extends AsyncTask<Void, Void, Boolean> {
-        private Context context;
-
-        public RefreshAccessTokenTask(Context context) {
-            this.context = context;
-        }
-
-        @Override
-        protected Boolean doInBackground(Void... voids) {
-            OkHttpClient client = new OkHttpClient();
-            String refreshToken = AppBlizurPreferences.getString(context, "refreshToken", null);
-
-            if (refreshToken == null) {
-                return false;
-            }
-
-            Map<String, String> requestBodyMap = new HashMap<>();
-            requestBodyMap.put("refreshToken", refreshToken);
-
-            String requestBody = new JSONObject(requestBodyMap).toString();
-            String url = AppBlizurConstants.API_BASE_URL + REFRESH_AUTH_ENDPOINT;
-            Request request = new Request.Builder()
-                    .url(url)
-                    .post(RequestBody.create(JSON, requestBody))
-                    .build();
-            try {
-                Response response = client.newCall(request).execute();
-
-                // Check if the response is successful
-                if (response.isSuccessful()) {
-                    saveTokens(response.body().string(), context);
-                    return true;
-                } else {
-                    return false;
-                }
-            } catch (IOException | JSONException e) {
-//                e.printStackTrace();
-                Log.e("RefreshAccessTokenTask", e.getMessage());
-                return false;
-            }
-        }
-
-        @Override
-        protected void onPostExecute(Boolean result) {
-            super.onPostExecute(result);
-            refreshAccessTokenTask = null;
-            if (!result) {
-                // Handle failure case
+            if (result) {
+//                Log.d("BlizurAPI:AccessTokenRequestTask", "Authentication Successful");
+                SocketManager.setup(mContext, mActivity);
+//                Log.i("BlizurAPI", "setup is done");
             }
         }
     }
 
-    public void handleAuthentication(String apiKey, String secret, Context context) throws IOException, JSONException {
+    public void handleAuthentication(String apiKey, String secret, Context context, Activity activity) throws IOException, JSONException {
         boolean isAccessTokenPresent = isAccessTokenValid(context);
-        boolean isTokenRefreshed = false;
-        if (!isAccessTokenPresent) {
-            if (refreshAccessTokenTask == null) {
-//                Log.d("handleAuthentication", "hitting refresh token api..");
-                refreshAccessTokenTask = new RefreshAccessTokenTask(context);
-                refreshAccessTokenTask.execute();
-            }
-        }
-        if (isAccessTokenPresent || isTokenRefreshed) {
+        if (isAccessTokenPresent) {
 //            Log.d("handleAuthentication", "not hitting verify creds api, token is available..");
+            SocketManager.setup(context, activity);
             return;
         }
 //        Log.d("handleAuthentication", "hitting verify creds api for authentication..");
-        new AccessTokenRequestTask(context).execute(apiKey, secret);
+        new AccessTokenRequestTask(context, activity).execute(apiKey, secret);
     }
 }

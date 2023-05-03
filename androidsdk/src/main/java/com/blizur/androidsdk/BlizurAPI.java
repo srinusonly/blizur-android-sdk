@@ -19,11 +19,9 @@ public class BlizurAPI {
         if (context instanceof Activity) {
             try {
 //                Log.d("BlizurAPI", "init called");
-                AuthenticationManager.getInstance().handleAuthentication(apiKey, secret, context);
-//                Log.d("BlizurAPI", "Authentication is done");
                 final Activity activity = (Activity) context;
-                SocketManager.setup(context, activity);
-//                Log.d("BlizurAPI", "socket setup is done");
+                AuthenticationManager.getInstance().handleAuthentication(apiKey, secret, context, activity);
+//                Log.d("BlizurAPI", "Setup is done");
             } catch (Exception e) {
                 Log.e("Error while setting up blizur", e.getMessage());
             }
