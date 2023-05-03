@@ -72,6 +72,7 @@ public class PopupManager {
             // Show the popup window at the bottom of the screen
             popupWindow.showAtLocation(activity.getWindow().getDecorView().getRootView(), Gravity.BOTTOM, 0, 0);
 
+            popupWindow.setOutsideTouchable(false);
             closeButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -86,7 +87,7 @@ public class PopupManager {
                 }
             });
         } catch (JSONException error) {
-            // Log.e("Show Popup", error.toString());
+             Log.e("Show Popup", error.getMessage());
         }
     }
 

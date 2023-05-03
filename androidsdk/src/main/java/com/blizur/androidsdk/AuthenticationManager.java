@@ -108,6 +108,7 @@ public class AuthenticationManager {
 
             requestBodyMap.put("clientId", params[0]);
             requestBodyMap.put("secret", params[1]);
+            requestBodyMap.put("platform", "android");
             if (userId != null) {
                 requestBodyMap.put("userId", userId);
             }
@@ -195,16 +196,16 @@ public class AuthenticationManager {
         boolean isTokenRefreshed = false;
         if (!isAccessTokenPresent) {
             if (refreshAccessTokenTask == null) {
-                Log.d("handleAuthentication", "hitting refresh token api..");
+//                Log.d("handleAuthentication", "hitting refresh token api..");
                 refreshAccessTokenTask = new RefreshAccessTokenTask(context);
                 refreshAccessTokenTask.execute();
             }
         }
         if (isAccessTokenPresent || isTokenRefreshed) {
-            Log.d("handleAuthentication", "not hitting verify creds api, token is available..");
+//            Log.d("handleAuthentication", "not hitting verify creds api, token is available..");
             return;
         }
-        Log.d("handleAuthentication", "hitting verify creds api for authentication..");
+//        Log.d("handleAuthentication", "hitting verify creds api for authentication..");
         new AccessTokenRequestTask(context).execute(apiKey, secret);
     }
 }
