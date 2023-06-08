@@ -38,7 +38,7 @@ public class SocketManager {
                     connect();
                     emit(AppBlizurConstants.SOCKET_EVENT_INIT_CONFIG, token);
                 } catch (Exception e) {
-                    Log.e("SocketManager", "Failed to connect to socket", e);
+//                    Log.e("SocketManager", "Failed to connect to socket", e);
                 }
                 return null;
             }
@@ -78,23 +78,43 @@ public class SocketManager {
     }
 
     public static void connect() throws URISyntaxException {
-        socket = IO.socket(AppBlizurConstants.SOCKET_URL);
+//        Log.d("BlizurAPI", "connect::establishing socket connection..");
+        IO.Options options = new IO.Options();
+        options.forceNew = true;
+        options.reconnection = true;
+        options.reconnectionDelay = 2000;
+        options.reconnectionDelayMax = 60000;
+        options.reconnectionAttempts = Integer.MAX_VALUE;
+        options.timeout = 10000;
+        options.transports = new String[]{"websocket"};
+        socket = IO.socket(AppBlizurConstants.SOCKET_URL, options);
+        socket.on(Socket.EVENT_CONNECT_ERROR, new Emitter.Listener() {
+            @Override
+            public void call(Object... args) {
+                Exception ex = (Exception) args[0];
+//                Log.e("BlizurAPI", "Connection error: " + ex.getMessage());
+            }
+        });
         socket.connect();
+
     }
 
     public static void disconnect() {
+//        Log.d("BlizurAPI", "disconnect::disconnecting socket connection..");
         if (socket != null && socket.connected()) {
             socket.disconnect();
         }
     }
 
     public static void on(String event, Emitter.Listener listener) {
+//        Log.d("BlizurAPI", "on::emitting event.."+event);
         if (socket != null) {
             socket.on(event, listener);
         }
     }
 
     public static void off(String event, Emitter.Listener listener) {
+//        Log.d("BlizurAPI", "off::emitting event..");
         if (socket != null) {
             socket.off(event, listener);
         }

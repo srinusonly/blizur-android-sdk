@@ -6,6 +6,8 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
+import android.os.Handler;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -27,6 +29,27 @@ public class PopupManager {
 
     private static PopupWindow popupWindow;
 
+    private static String updateMeetingUrl(Context context, String meetingUrl) {
+        String userId = AppBlizurPreferences.getString(context, "userId", null);
+        if (TextUtils.isEmpty(meetingUrl) || TextUtils.isEmpty(userId)) {
+            return meetingUrl;
+        }
+
+        if (!meetingUrl.contains("?")) {
+            meetingUrl = meetingUrl + "?pid=" + userId;
+        } else {
+            meetingUrl = meetingUrl + "&pid=" + userId;
+        }
+
+        return meetingUrl;
+    }
+
+    /**
+     * @param context
+     * @param activity
+     * @param popupJson
+     * @param anchorView
+     */
     public static void showPopup(Context context, Activity activity, JSONObject popupJson, @Nullable View anchorView) {
         try {
             if (popupWindow != null) {
@@ -35,6 +58,8 @@ public class PopupManager {
             String title = popupJson.getString("title");
             String joinCta = popupJson.getString("cta");
             final String meetingUrl = popupJson.getString("meetingUrl");
+            final int nudgeWaitingTimeout = popupJson.optInt("nudgeWaitingTimeout", 60 * 1000);
+//            Log.d("BlizurAPI:nudgeWaitingTimeout", ""+nudgeWaitingTimeout);
             JSONObject declineData = new JSONObject();
             declineData.put("reason", "user declined");
 
@@ -50,7 +75,7 @@ public class PopupManager {
                 @Override
                 public void onClick(View view) {
                     SocketManager.emit(AppBlizurConstants.SOCKET_EVENT_ACCEPTED_REQUEST, popupJson);
-                    Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(meetingUrl));
+                    Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(updateMeetingUrl(context, meetingUrl)));
                     activity.startActivity(browserIntent);
                 }
             });
@@ -76,6 +101,7 @@ public class PopupManager {
             closeButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+//                    Log.d("BlizurAPI", "tapped on closeButton..");
                     long expiryTimeSeconds = 24*60*60; // Set the expiry time to one day in seconds
                     long currentTimestamp = System.currentTimeMillis() / 1000; // Get the current Unix timestamp in seconds
                     long expiryTimestamp = currentTimestamp + expiryTimeSeconds; // Calculate the expiry Unix timestamp in seconds
@@ -86,11 +112,20 @@ public class PopupManager {
                     popupWindow.dismiss();
                 }
             });
+
+            // Schedule a delayed runnable to call hidePopup after nudgeWaitingTimeout
+            Handler handler = new Handler();
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+//                    Log.d("BlizurAPI", "hidePopup called after waiting timeout..");
+                    hidePopup();
+                }
+            }, nudgeWaitingTimeout); // 60 seconds * 1000 milliseconds
         } catch (JSONException error) {
-             Log.e("Show Popup", error.getMessage());
+//            Log.e("Show Popup", error.getMessage());
         }
     }
-
     public static void hidePopup() {
         if (popupWindow != null) {
             popupWindow.dismiss();
