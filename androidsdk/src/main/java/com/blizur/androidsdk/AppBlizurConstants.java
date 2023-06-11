@@ -8,4 +8,7 @@ public class AppBlizurConstants {
     public static final String SOCKET_EVENT_HIDE_POPUP_REQUEST = "hidePopupRequest";
     public static final String SOCKET_EVENT_ACCEPTED_REQUEST = "acceptedRequest";
     public static final String SOCKET_EVENT_DECLINED_REQUEST = "declinedRequest";
+    public static final String SOCKET_EVENT_SCREEN_VISITED = "pageVisited";
+    public static final String SOCKET_EVENT_SCREEN_LEFT = "pageLeft";
+    public static final String AUTOMATIC_SCREEN_TRACKING_ENABLED = "blizur_automatic_screen_tracking_enabled";
 }

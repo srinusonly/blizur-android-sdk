@@ -77,26 +77,29 @@ public class SocketManager {
         }.execute();
     }
 
-    public static void connect() throws URISyntaxException {
-//        Log.d("BlizurAPI", "connect::establishing socket connection..");
-        IO.Options options = new IO.Options();
-        options.forceNew = true;
-        options.reconnection = true;
-        options.reconnectionDelay = 2000;
-        options.reconnectionDelayMax = 60000;
-        options.reconnectionAttempts = Integer.MAX_VALUE;
-        options.timeout = 10000;
-        options.transports = new String[]{"websocket"};
-        socket = IO.socket(AppBlizurConstants.SOCKET_URL, options);
-        socket.on(Socket.EVENT_CONNECT_ERROR, new Emitter.Listener() {
-            @Override
-            public void call(Object... args) {
-                Exception ex = (Exception) args[0];
-//                Log.e("BlizurAPI", "Connection error: " + ex.getMessage());
-            }
-        });
-        socket.connect();
-
+    public static void connect() {
+        try {
+            //        Log.d("BlizurAPI", "connect::establishing socket connection..");
+            IO.Options options = new IO.Options();
+            options.forceNew = true;
+            options.reconnection = true;
+            options.reconnectionDelay = 2000;
+            options.reconnectionDelayMax = 60000;
+            options.reconnectionAttempts = Integer.MAX_VALUE;
+            options.timeout = 10000;
+            options.transports = new String[]{"websocket"};
+            socket = IO.socket(AppBlizurConstants.SOCKET_URL, options);
+            socket.on(Socket.EVENT_CONNECT_ERROR, new Emitter.Listener() {
+                @Override
+                public void call(Object... args) {
+                    Exception ex = (Exception) args[0];
+                    //                Log.e("BlizurAPI", "Connection error: " + ex.getMessage());
+                }
+            });
+            socket.connect();
+        } catch (URISyntaxException exception) {
+//            Log.e("BlizurAPI", "Exception while setting up socket" + exception.getMessage());
+        }
     }
 
     public static void disconnect() {

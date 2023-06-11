@@ -135,11 +135,11 @@ public class AuthenticationManager {
                     return true;
                 } else {
                     String message = getMessageFromResponse(response);
-                    Log.e("BlizurAPI", message);
+//                    Log.e("BlizurAPI", message);
                 }
             } catch (IOException | JSONException e) {
 //                e.printStackTrace();
-                Log.e("BlizurAPI", e.getMessage());
+//                 Log.e("BlizurAPI", e.getMessage());
             }
             return false;
         }
