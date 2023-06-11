@@ -23,10 +23,8 @@ import java.util.Map;
 public class ScreenTracker implements Application.ActivityLifecycleCallbacks {
     private static final String TAG = "ScreenTracker";
     private String currentScreen;
-
     private static boolean isTrackingScreenEnabled = false;
     private Activity gActivity;
-
     public static void initialize(Context context) {
         try {
             isAutomaticScreenTrackingEnabled(context);
@@ -69,6 +67,7 @@ public class ScreenTracker implements Application.ActivityLifecycleCallbacks {
     public void onActivityResumed(Activity activity) {
 //        Log.d(TAG, "onActivityResumed");
         currentScreen = getActivityName(activity);
+        SocketManager.connect();
         if (isTrackingScreenEnabled) {
             handleScreenVisited(activity, currentScreen);
         }
@@ -81,6 +80,7 @@ public class ScreenTracker implements Application.ActivityLifecycleCallbacks {
         if (isTrackingScreenEnabled) {
             handleScreenLeft(activity, currentScreen);
         }
+        SocketManager.disconnect();
     }
 
     @Override
@@ -90,6 +90,7 @@ public class ScreenTracker implements Application.ActivityLifecycleCallbacks {
         if (isTrackingScreenEnabled) {
             handleScreenLeft(activity, currentScreen);
         }
+        SocketManager.disconnect();
     }
 
     @Override
@@ -104,6 +105,7 @@ public class ScreenTracker implements Application.ActivityLifecycleCallbacks {
         if (isTrackingScreenEnabled) {
             handleScreenLeft(activity, currentScreen);
         }
+        SocketManager.disconnect();
     }
 
     private String getActivityName(Activity activity) {

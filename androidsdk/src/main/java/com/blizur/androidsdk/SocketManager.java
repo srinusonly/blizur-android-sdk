@@ -17,6 +17,10 @@ import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
 
 public class SocketManager {
+
+    private static final String TAG = "SocketManager";
+
+    private static Context gContext;
     private static Socket socket;
 
     public static Socket getSocket() {
@@ -25,6 +29,7 @@ public class SocketManager {
 
     public static void setup(Context reactContext, Activity activity) {
         Context context = reactContext;
+        gContext = context;
         long currentTimestamp = System.currentTimeMillis() / 1000; // Get the current Unix timestamp in seconds
         long expiryTimestamp = AppBlizurPreferences.getLong(context, "isRequestDeclined_expiry_timestamp", 0);
         if (currentTimestamp < expiryTimestamp) {
@@ -34,9 +39,7 @@ public class SocketManager {
             @Override
             protected String doInBackground(Void... voids) {
                 try {
-                    String token = AppBlizurPreferences.getString(context, "accessToken", null);
                     connect();
-                    emit(AppBlizurConstants.SOCKET_EVENT_INIT_CONFIG, token);
                 } catch (Exception e) {
 //                    Log.e("SocketManager", "Failed to connect to socket", e);
                 }
@@ -79,6 +82,9 @@ public class SocketManager {
 
     public static void connect() {
         try {
+            if (socket != null && socket.connected()) {
+                return;
+            }
             //        Log.d("BlizurAPI", "connect::establishing socket connection..");
             IO.Options options = new IO.Options();
             options.forceNew = true;
@@ -94,6 +100,14 @@ public class SocketManager {
                 public void call(Object... args) {
                     Exception ex = (Exception) args[0];
                     //                Log.e("BlizurAPI", "Connection error: " + ex.getMessage());
+                }
+            });
+            socket.on(Socket.EVENT_CONNECT, new Emitter.Listener() {
+                @Override
+                public void call(Object... args) {
+//                    Log.d(TAG, "connect event called..");
+                    String token = AppBlizurPreferences.getString(gContext, "accessToken", null);
+                    emit(AppBlizurConstants.SOCKET_EVENT_INIT_CONFIG, token);
                 }
             });
             socket.connect();
